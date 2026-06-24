@@ -142,5 +142,70 @@ fill="#000000" viewBox="0 0 24 24" >
 
   </div>
 
+  <canvas id="bubble-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+<script>
+  const canvas = document.getElementById('bubble-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  const bubbles = [];
+  let lastTime = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - lastTime < 120) return;
+    lastTime = now;
+
+    bubbles.push({
+      x: e.clientX + (Math.random() - 0.5) * 10,
+      y: e.clientY + (Math.random() - 0.5) * 10,
+      r: Math.random() * 8 + 6,
+      alpha: 0.5,
+      speedY: Math.random() * 0.8 + 0.4,
+      speedX: (Math.random() - 0.5) * 0.3
+    });
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+
+      const gradient = ctx.createRadialGradient(
+        b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.1,
+        b.x, b.y, b.r
+      );
+      gradient.addColorStop(0, `rgba(255, 255, 255, ${b.alpha * 0.6})`);
+      gradient.addColorStop(0.4, `rgba(26, 171, 138, ${b.alpha * 0.15})`);
+      gradient.addColorStop(1, `rgba(26, 171, 138, ${b.alpha * 0.4})`);
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(26, 171, 138, ${b.alpha * 0.5})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      b.y -= b.speedY;
+      b.x += b.speedX;
+      b.alpha -= 0.008;
+      if (b.alpha <= 0) bubbles.splice(i, 1);
+    }
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+
 </body>
 </html>
